@@ -75,7 +75,19 @@ class CPU:
         self.pc += 2
     
     def handlePOP(self, a, b = None):
+        # get value from RAM
+        address = self.stack_pointer
+        val = self.ram[address]
 
+        # store at given register
+        reg_num = self.ram[self.pc + 1]
+        self.reg[reg_num] = val
+
+        # increment stack pointer and program counter
+        self.stack_pointer += 1
+        self.stack_pointer &= 0xff  # keep in range of 00-FF
+
+        self.pc += 2
 
     def ram_read(self, MAR):  # MAR = Memory address register
         # uses an address to read and returns the value stored at that address
