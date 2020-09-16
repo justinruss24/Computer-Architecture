@@ -1,13 +1,14 @@
 """CPU functionality."""
 
 import sys
-# filename = sys.argv[1]
-# print(filename)
+
 
 LDI = 0b10000010
 PRN = 0b01000111
 HLT = 0b00000001
 MUL = 0b10100010
+PUSH = 0b01000101
+POP = 0b01000110
 
 class CPU:
     """Main CPU class."""
@@ -27,11 +28,10 @@ class CPU:
         self.branchtable[LDI] = self.handle_LDI
         self.branchtable[PRN] = self.handle_PRN
         self.branchtable[MUL] = self.handle_MUL
-
-    # def load(self):
-    #     """Load a program into memory."""
-
-        # address = 0
+        self.branchtable[PUSH] = self.handlePUSH
+        self.branchtable[POP] = self.handlePOP
+        self.stack_pointer = 0xf4
+        self.reg[7] = self.stack_pointer
 
         # For now, we've just hardcoded a program:
 
@@ -48,18 +48,35 @@ class CPU:
         # for instruction in program:
         #     self.ram[address] = instruction
         #     address += 1
+
     def handle_HLT(self, *args):
         self.running = False
     
     def handle_LDI(self, op_a, op_b):
-        self.reg[op_a] = [op_b]
+        self.reg[op_a] = op_b
 
     def handle_PRN(self, op_a, op_b):
         print(self.reg[op_a])
     
     def handle_MUL(self, op_a, op_b):
+        print(op_a, op_b)
         self.alu('MUL', op_a, op_b)
+
+    def handlePUSH(self, a, b = None):
+        # decrement stack pointer
+        self.stack_pointer -= 1
+        self.stack_pointer &= 0xff  # keep in range of 00-FF
+        # get register number and value stored at specified regn umber
+        reg_num = self.ram[self.pc + 1]
+        val = self.reg[reg_num]
+
+        # store value in ram
+        self.ram[self.stack_pointer] = val
+        self.pc += 2
     
+    def handlePOP(self, a, b = None):
+
+
     def ram_read(self, MAR):  # MAR = Memory address register
         # uses an address to read and returns the value stored at that address
         return self.ram[MAR]
@@ -91,6 +108,7 @@ class CPU:
             self.reg[reg_a] += self.reg[reg_b]
         #elif op == "SUB": etc
         elif op == 'MUL':
+            # print(self.reg[reg_b])
             self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
