@@ -9,6 +9,8 @@ HLT = 0b00000001
 MUL = 0b10100010
 PUSH = 0b01000101
 POP = 0b01000110
+CALL = 0b01010000
+RET = 0b00010001
 
 class CPU:
     """Main CPU class."""
@@ -30,6 +32,8 @@ class CPU:
         self.branchtable[MUL] = self.handle_MUL
         self.branchtable[PUSH] = self.handlePUSH
         self.branchtable[POP] = self.handlePOP
+        self.branchtable[CALL] = self.handle_CALL
+        self.branchtable[RET] = self.handle_RET
         self.stack_pointer = 0xf4
         self.reg[7] = self.stack_pointer
 
@@ -72,7 +76,7 @@ class CPU:
 
         # store value in ram
         self.ram[self.stack_pointer] = val
-        # self.pc += 2
+
     
     def handlePOP(self, a, b = None):
         # get value from RAM
@@ -86,8 +90,19 @@ class CPU:
         # increment stack pointer and program counter
         self.stack_pointer += 1
         self.stack_pointer &= 0xff  # keep in range of 00-FF
-
-        # self.pc += 2
+    
+    def handle_CALL(self, op_a, op_b):
+        addr = self.reg[op_a]
+        rtn_addr = self.pc + 2
+        self.reg[7] -= 1
+        sp = self.reg[7]
+        self.ram[sp] = rtn_addr
+        self.pc = addr
+    
+    def handle_RET(self, *args):
+        rtn_addr = self.ram[self.reg[7]]
+        self.reg[7] += 1
+        self.pc = rtn_addr
 
     def ram_read(self, MAR):  # MAR = Memory address register
         # uses an address to read and returns the value stored at that address
