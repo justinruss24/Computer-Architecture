@@ -65,14 +65,14 @@ class CPU:
     def handlePUSH(self, a, b = None):
         # decrement stack pointer
         self.stack_pointer -= 1
-        self.stack_pointer &= 0xff  # keep in range of 00-FF
-        # get register number and value stored at specified regn umber
+        # self.stack_pointer &= 0xff  # keep in range of 00-FF
+        # get register number and value stored at specified reg number
         reg_num = self.ram[self.pc + 1]
         val = self.reg[reg_num]
 
         # store value in ram
         self.ram[self.stack_pointer] = val
-        self.pc += 2
+        # self.pc += 2
     
     def handlePOP(self, a, b = None):
         # get value from RAM
@@ -87,7 +87,7 @@ class CPU:
         self.stack_pointer += 1
         self.stack_pointer &= 0xff  # keep in range of 00-FF
 
-        self.pc += 2
+        # self.pc += 2
 
     def ram_read(self, MAR):  # MAR = Memory address register
         # uses an address to read and returns the value stored at that address
